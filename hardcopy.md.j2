@@ -1,0 +1,42 @@
+# Hard copy backup of {{ name }}
+### Checksum: {{ hexdigest }}
+### Created on {{ creation_date }}
+### Printed on ___________________
+### Tested on ____________________
+### Tested with camera or scanner model _____________________
+
+Prepared by:
+{{ backup_app_name }}
+of {{ backup_app_version }}
+from {{ backup_app_source_url }}
+
+This backup consists of {{ barcode_count }} annotated barcodes in {{ barcode_type }} format.
+
+Restore:
+
+Requirements:
+zbar-tools
+scanner or webcam
+
+Then:
+
+> $ zbarcam | sed -n -e '/^$/N; /^\n$/N; s/^\n\?QR-Code://; p' > {{ data_name }}
+
+Table of contents:
+
+0. This page
+1. GPG key restore and revocation howtos
+{% for i in range(segments|count) %}
+{{ i+2 }}. Segment {{ i }}.
+   Checksum: {{ segments[i].hexdigest }}
+{% endfor  %}
+
+\newpage
+
+{% for i in range(segments|count) %}
+# Hardcopy backup segment {{ i }} of {{ name }}
+
+![QR code]({{ segments[i].segment_png }} "QR code")
+
+\newpage
+{% endfor %}
