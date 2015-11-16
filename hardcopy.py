@@ -90,11 +90,27 @@ class HardCopy():
 
         template = jenv.get_template('hardcopy.md.j2')
 
-        self.pandoc_input = template.render(self.config)
+        self.markdown = template.render(self.config)
 
-#    def pandoc_render(self):
+        self.hardcopy_md = os.path.join(self.build_d, 'hardcopy.md')
         
-        
+        hardcopy_md_f = open(self.hardcopy_md, 'w')
+        hardcopy_md_f.write(self.markdown)
+        hardcopy_md_f.close()
+
+    def pandoc_render(self):
+        self.hardcopy_pdf = os.path.join(self.build_d, 'hardcopy.pdf')
+
+        try:
+            subprocess.check_output(['/usr/bin/pandoc',
+                                     '--from',
+                                     'markdown+yaml_metadata_block',
+                                     '--output',
+                                     self.hardcopy_pdf,
+                                     self.hardcopy_md], stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            print(e.output)
+
 def parse_config():
         with open('config.yml') as config_f:
             config = yaml.load(config_f)
@@ -108,8 +124,7 @@ def main():
     hc = HardCopy(config[0])
     hc.process_data()
     hc.jinja2_render()
-
-    print hc.pandoc_input
+    hc.pandoc_render()
     
     return
 
