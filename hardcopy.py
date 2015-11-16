@@ -80,7 +80,7 @@ class HardCopy():
         dt = datetime.datetime.utcnow()
         self.config['creation_date'] = dt
 
-    def render_hardcopy(self):
+    def jinja2_render(self):
         loader = FileSystemLoader(os.getcwd())
 
         #jenv = Environment(loader=loader,
@@ -90,8 +90,11 @@ class HardCopy():
 
         template = jenv.get_template('hardcopy.md.j2')
 
-        print template.render(self.config)
+        self.pandoc_input = template.render(self.config)
 
+#    def pandoc_render(self):
+        
+        
 def parse_config():
         with open('config.yml') as config_f:
             config = yaml.load(config_f)
@@ -104,7 +107,9 @@ def main():
 
     hc = HardCopy(config[0])
     hc.process_data()
-    hc.render_hardcopy()
+    hc.jinja2_render()
+
+    print hc.pandoc_input
     
     return
 
