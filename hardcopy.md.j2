@@ -11,7 +11,17 @@ toc: True
 
 # Restore
 
-    $ zbarcam | sed -n -e '/^$/N; /^\n$/N; s/^\n\?QR-Code://; p' > data.asc
+Using a webcam:
+
+    $ zbarcam \
+    | awk -v RS="\n?QR-Code:" -v ORS="" '{ print }' \
+	| head -c -1 > data.asc
+
+Using scanned barcodes:
+
+    $ zbarimg --quiet page-*.pnm \
+    | awk -v RS="\n?QR-Code:" -v ORS="" '{ print }' \
+	| head -c -1 > data.asc
 
 \newpage
 {% for i in range(segments|count) %}
