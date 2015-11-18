@@ -5,9 +5,17 @@ author: '{{ author }}'
 date: '{{ creation_date }}'
 documentclass: article
 toc: True
+header-includes:
+    - \usepackage{listings}
+abstract: |
+    Restoring this data, for the impatient:
+    \begin{lstlisting}[language=bash,frame=single]
+    $ zbarcam \
+	| awk -v RS="\n?QR-Code:" -v ORS="" '{ print }' \
+	| head -c -1 \
+	> data.asc
+	\end{lstlisting}
 ...
-
-\newpage
 
 # Restore
 
@@ -15,17 +23,21 @@ Using a webcam:
 
     $ zbarcam \
     | awk -v RS="\n?QR-Code:" -v ORS="" '{ print }' \
-	| head -c -1 > data.asc
+	| head -c -1 \
+	> data.asc
 
 Using scanned barcodes:
 
     $ zbarimg --quiet page-*.pnm \
     | awk -v RS="\n?QR-Code:" -v ORS="" '{ print }' \
-	| head -c -1 > data.asc
+	| head -c -1 \
+	> data.asc
 
 \newpage
 {% for i in range(segments|count) %}
-# Hardcopy backup segment {{ i+1 }} of {{ segments|count }} of {{ name }}
+# Barcode backup segment {{ i+1 }} of {{ name }}
+
+Segment {{ i+1 }} of {{ segments|count }}
 
 SHA256 checksum:
 
