@@ -91,9 +91,6 @@ class HardCopy():
     def jinja2_render(self):
         loader = FileSystemLoader(os.getcwd())
 
-        #jenv = Environment(loader=loader,
-        #                   line_statement_prefix='/',
-        #                   line_comment_prefix='//')
         jenv = Environment(loader=loader)
 
         template = jenv.get_template('hardcopy.md.j2')
@@ -118,43 +115,6 @@ class HardCopy():
                                      self.hardcopy_md], stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             print(e.output)
-
-    def test_scan(self, scans_hexdigests, raw=True):
-        zbarimg_out_cat = b''
-        
-        for (index,(scan_f,hexdigest)) in enumerate(scans_hexdigests):
-            hash = hashlib.sha256()
-            zbarimg_out = subprocess.check_output(['zbarimg', '--quiet', '--raw', scan_f])
-
-            #print(zbarimg_out[:-1])
-            hash.update(zbarimg_out[:-1]) # chomp trailing newline
-            if hash.hexdigest() == hexdigest:
-                print('Segment %d PNG: OK' % (index+1))
-            else:
-                print('Segment %d PNG: checksum mismatch' % (index+1))
-            
-            zbarimg_out_cat += zbarimg_out[:-1]
-
-        hash = hashlib.sha256()
-        hash.update(zbarimg_out_cat)
-
-        if hash.hexdigest() == self.config['hexdigest']:
-            print('Data from raw PNGs: OK')
-        else:
-            print('Data from raw PNGs: checksum mismatch')
-
-    def test_PNGs(self):
-        self.test_scan(
-                [
-                    ( s['segment_png'], s['hexdigest'] )
-                    
-                    for s in self.config['segments']
-                ]
-            )
-
-#    def test_PNMs(self):
-#        result = subprocess.check_call(['convert',
-
            
 def parse_config():
         with open('config.yml') as config_f:
@@ -169,9 +129,6 @@ def main():
     hc.jinja2_render()
     hc.pandoc_render()
 
-    hc.test_PNGs()
-
-    
     return
 
 if __name__ == '__main__':
