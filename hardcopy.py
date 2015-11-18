@@ -27,14 +27,35 @@ class HardCopy():
             if e.errno == 17:
                 pass
 
-    def process_data(self):
-        base_png = os.path.join(self.img_d, 'segment-%d.png')
-        
-        data = subprocess.check_output(self.config['command'], shell=True)
-        segment_size = 512
 
+    def qrencode(self, segment, segment_png):
+        qrencode = subprocess.Popen(['qrencode',
+                                     '--level=%s' % ('L'),
+                                     '--type=%s' % ('PNG'),
+                                     '--output=%s' % (segment_png)],
+                                    stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE,
+                                    cwd=os.getcwd())
+            
+        qrencode_result = qrencode.communicate(input=segment)
+        
+        if qrencode.returncode != 0:
+            raise('Could not generate barcode: %s' % (qrencode_result.stderr))
+
+        return
+            
+    def process_data(self):
+        segment_size = 512
+        self.data = subprocess.check_output(self.config['command'], shell=True)
+
+        segment_count = len(self.data)/segment_size + 1
+        zeropad = segment_count / 10 + 1
+        
+        base_png = os.path.join(self.img_d, 'segment-%0' + str(zeropad) + 'd.png')
+     
         full_hash = hashlib.sha256()
-        full_hash.update(data)
+        full_hash.update(self.data)
         self.config['hexdigest'] = full_hash.hexdigest()
     
         segments = []
@@ -42,35 +63,22 @@ class HardCopy():
         # DEBUG
         test_hash = hashlib.sha256()
 
-        for i in range(0,len(data),segment_size):
-            segment = data[i:i+segment_size]
+        for i in range(0,len(self.data),segment_size):
+            segment = self.data[i:i+segment_size]
             hash = hashlib.sha256()
             hash.update(segment)
             
             #DEBUG
             test_hash.update(segment)
 
-            segment_png = base_png % (i/segment_size)
+            segment_png = base_png % (i/segment_size+1)
 
-            qrencode = subprocess.Popen(['qrencode',
-                                         '--level=%s' % ('L'),
-                                         '--type=%s' % ('PNG'),
-                                         '--output=%s' % (segment_png)],
-                                        stdin=subprocess.PIPE,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE,
-                                        cwd=os.getcwd())
-            
-            qrencode_result = qrencode.communicate(input=segment)
-            if qrencode.returncode != 0:
-                raise('Could not generate barcode: %s' % (qrencode_result.stderr))
+            self.qrencode(segment, segment_png)
 
             segments.append({'data': segment,
                              'hexdigest': hash.hexdigest(),
                              'segment_png': segment_png,})
             
-            #print(segments[-1]['hash'])
-
         # DEBUG
         assert test_hash.hexdigest() == self.config['hexdigest']
 
@@ -111,6 +119,43 @@ class HardCopy():
         except subprocess.CalledProcessError as e:
             print(e.output)
 
+    def test_scan(self, scans_hexdigests, raw=True):
+        zbarimg_out_cat = b''
+        
+        for (index,(scan_f,hexdigest)) in enumerate(scans_hexdigests):
+            hash = hashlib.sha256()
+            zbarimg_out = subprocess.check_output(['zbarimg', '--quiet', '--raw', scan_f])
+
+            #print(zbarimg_out[:-1])
+            hash.update(zbarimg_out[:-1]) # chomp trailing newline
+            if hash.hexdigest() == hexdigest:
+                print('Segment %d PNG: OK' % (index+1))
+            else:
+                print('Segment %d PNG: checksum mismatch' % (index+1))
+            
+            zbarimg_out_cat += zbarimg_out[:-1]
+
+        hash = hashlib.sha256()
+        hash.update(zbarimg_out_cat)
+
+        if hash.hexdigest() == self.config['hexdigest']:
+            print('Data from raw PNGs: OK')
+        else:
+            print('Data from raw PNGs: checksum mismatch')
+
+    def test_PNGs(self):
+        self.test_scan(
+                [
+                    ( s['segment_png'], s['hexdigest'] )
+                    
+                    for s in self.config['segments']
+                ]
+            )
+
+#    def test_PNMs(self):
+#        result = subprocess.check_call(['convert',
+
+           
 def parse_config():
         with open('config.yml') as config_f:
             config = yaml.load(config_f)
@@ -119,12 +164,13 @@ def parse_config():
 def main():
     config = parse_config()
 
-    #j2_config = process_datum(config[0])
-
     hc = HardCopy(config[0])
     hc.process_data()
     hc.jinja2_render()
     hc.pandoc_render()
+
+    hc.test_PNGs()
+
     
     return
 
