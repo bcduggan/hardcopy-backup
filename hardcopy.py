@@ -3,6 +3,7 @@
 
 import os
 import yaml
+import pytz
 import hashlib
 import datetime
 import qrencode
@@ -47,15 +48,15 @@ class HardCopy():
             
     def process_data(self):
         segment_size = 512
-        self.data = subprocess.check_output(self.config['command'], shell=True)
+        self.config['data'] = subprocess.check_output(self.config['command'], shell=True)
 
-        segment_count = len(self.data)/segment_size + 1
+        segment_count = len(self.config['data'])/segment_size + 1
         zeropad = segment_count / 10 + 1
         
         base_png = os.path.join(self.img_d, 'segment-%0' + str(zeropad) + 'd.png')
      
         full_hash = hashlib.sha256()
-        full_hash.update(self.data)
+        full_hash.update(self.config['data'])
         self.config['hexdigest'] = full_hash.hexdigest()
     
         segments = []
@@ -63,8 +64,8 @@ class HardCopy():
         # DEBUG
         test_hash = hashlib.sha256()
 
-        for i in range(0,len(self.data),segment_size):
-            segment = self.data[i:i+segment_size]
+        for i in range(0,len(self.config['data']),segment_size):
+            segment = self.config['data'][i:i+segment_size]
             hash = hashlib.sha256()
             hash.update(segment)
             
@@ -85,8 +86,8 @@ class HardCopy():
         self.config['segments'] = segments
         self.config['barcode_count'] = len(segments)
         
-        dt = datetime.datetime.utcnow()
-        self.config['creation_date'] = dt
+        dt = datetime.datetime.now(pytz.timezone('EST'))
+        self.config['creation_date'] = dt.strftime('%Y-%m-%d %H:%M %Z')
 
     def jinja2_render(self):
         loader = FileSystemLoader(os.getcwd())

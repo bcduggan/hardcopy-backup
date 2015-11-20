@@ -9,12 +9,12 @@ header-includes:
     - \usepackage{listings}
 abstract: |
     Restoring this data, for the impatient:
-    \begin{lstlisting}[language=bash,frame=single]
+    \begin{verbatim}
     $ zbarcam \
 	| awk -v RS="\n?QR-Code:" -v ORS="" '{ print }' \
 	| head -c -1 \
 	> data.asc
-	\end{lstlisting}
+	\end{verbatim}
 
     Tested with scanner: $\square$
 
@@ -25,19 +25,32 @@ abstract: |
 
 Using a webcam:
 
-    $ zbarcam \
-    | awk -v RS="\n?QR-Code:" -v ORS="" '{ print }' \
-	| head -c -1 \
-	> data.asc
+\begin{verbatim}
+$ zbarcam \
+| awk -v RS="\n?QR-Code:" -v ORS="" '{ print }' \
+| head -c -1 \
+> data.asc
+\end{verbatim}
 
 Using scanned barcodes:
 
-    $ zbarimg --quiet page-*.pnm \
-    | awk -v RS="\n?QR-Code:" -v ORS="" '{ print }' \
-	| head -c -1 \
-	> data.asc
+\begin{verbatim}
+$ zbarimg --quiet page-*.pnm \
+| awk -v RS="\n?QR-Code:" -v ORS="" '{ print }' \
+| head -c -1 \
+> data.asc
+\end{verbatim}
 
 \newpage
+
+# Raw data
+
+\begin{verbatim}
+{{ data }}
+\end{verbatim}
+
+\newpage
+
 {% for i in range(segments|count) %}
 # Barcode backup segment {{ i+1 }} of {{ name }}
 
