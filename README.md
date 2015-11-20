@@ -4,18 +4,16 @@ Hardcopy Backup generates an annotated, human-readable, tested backup of data as
 
 The paper backup contains
 
-1. A cover page with
-  - The name of the backed up data
-  - Dates of creation and restore testing
-  - Full data checksum
-  - Data segment checksums
-  - Restore instructions
-  - Table of contents
+1. The name of the backed up data
+   Date of creation
+   Full data checksum
+   Data segment checksums
+   Restore instructions
+   Table of contents
 2. User documentation
   - How to restore the data to the application
 3. Data segment pages
+  - Plaintext
   - Bar codes
     - QR
     - Data matrix
-  - Plaintext
-	
