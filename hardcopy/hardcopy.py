@@ -1,14 +1,31 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+
+"""hardcopy.hardcopy: provides entry point main()."""
+
+
 import os
-import yaml
 import pytz
+import yaml
 import hashlib
 import datetime
-import qrencode
 import subprocess
 from jinja2 import Environment, FileSystemLoader
+
+def parse_config():
+        with open('config.yml') as config_f:
+            config = yaml.load(config_f)
+        return config
+            
+def main():
+    config = parse_config()
+
+    hc = HardCopy(config[0])
+    hc.process_data()
+    hc.jinja2_render()
+    hc.pandoc_render()
+
+    return
 
 class HardCopy():
 
@@ -116,21 +133,3 @@ class HardCopy():
                                      self.hardcopy_md], stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             print(e.output)
-           
-def parse_config():
-        with open('config.yml') as config_f:
-            config = yaml.load(config_f)
-        return config
-            
-def main():
-    config = parse_config()
-
-    hc = HardCopy(config[0])
-    hc.process_data()
-    hc.jinja2_render()
-    hc.pandoc_render()
-
-    return
-
-if __name__ == '__main__':
-    main()
