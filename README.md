@@ -1,6 +1,6 @@
 # Hardcopy Backup
 
-Hardcopy Backup generates an annotated, human-readable, tested backup of data as a printable file. Humans should be able to read the printed document and reliably reconstruct the data from paper, offline.
+Hardcopy Backup generates a printable file that contains an annotated, human-readable, tested backup of data. Humans should be able to read the printed document and reliably reconstruct the data from paper, offline.
 
 The paper backup contains
 
@@ -17,3 +17,12 @@ The paper backup contains
   - Bar codes
     - QR
     - Data matrix
+
+## Uses
+
+- GPG keys
+- GPG revocation certs
+- SSH keys
+- TOTP seeds
+- Recovery codes
+- Scannable passwords for mobile devices

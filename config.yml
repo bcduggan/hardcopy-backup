@@ -1,0 +1,7 @@
+---
+
+- name: GPG private key DEADBEEF
+  author: Brian C. Duggan
+  command: gpg2 --armor --export-secret-keys DEADBEEF
+  segment_size: 512
+  barcode: QR
