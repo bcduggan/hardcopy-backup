@@ -21,7 +21,7 @@ setup(
     install_requires=dependencies,
     entry_points={
         'console_scripts': [
-            'hardcopy-backup = hardcopy.cli:main',
+            'hardcopy = hardcopy.cli:cli',
         ],
     },
     classifiers=[

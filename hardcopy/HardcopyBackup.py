@@ -5,17 +5,20 @@ logging.basicConfig(level=logging.DEBUG)
 
 class HardcopyBackup(object):
 
-    config = {
-        'barcode': 'QR',
-        'segment_size': 256,
-    }
-    
-    def __init__(self, input):
-        self.config['input'] = input
+    def __init__(self, input, config={}):
+        self.input = input
+        self.config = config or {
+            'barcode': 'QR',
+            'to': 'PDF',
+            'segment_size': 512,
+        }
+
+        logging.debug(self.config)
+        
         return
 
     def segments(self):
-        input = self.config['input']
+        input = self.input
         size = self.config['segment_size']
         
         while True:
