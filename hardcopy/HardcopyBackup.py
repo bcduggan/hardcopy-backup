@@ -7,11 +7,12 @@ class HardcopyBackup(object):
 
     def __init__(self, input, config={}):
         self.input = input
-        self.config = config or {
+        self.config = {
             'barcode': 'QR',
             'to': 'PDF',
             'segment_size': 512,
         }
+        self.config.update(config)
 
         logging.debug(self.config)
         
