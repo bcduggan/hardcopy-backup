@@ -2,7 +2,7 @@ import logging
 import click
 from HardcopyBackup import HardcopyBackup
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 CONTEXT_SETTINGS = dict(
     default_map={'backup':
@@ -30,7 +30,8 @@ def backup(*args, **kwargs):
     hc = HardcopyBackup(kwargs['input'], config=kwargs)
 
     for barcode in hc.generate_barcodes():
-        logging.debug(barcode['hash'].hexdigest())
+        logging.info(barcode['hash'].hexdigest())
+        logging.info(barcode['image'])
     return
 
 if __name__ == '__main__':
