@@ -27,7 +27,7 @@ class Barcoder():
 
     def check_config(self):
         if self.config['barcode'] not in self.const.keys():
-            raise HardcopyError('Barcode type %s is not supported.' % (self.barcode))
+            raise HardcopyError('Barcode type %s is not supported.' % (self.config['barcode']))
     
     def build_config(self, build_dir, config={}):
         self.config = {}
