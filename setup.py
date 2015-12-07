@@ -3,7 +3,7 @@ Hardcopy Backup embeds critical data in a reliably restorable, printable file.
 """
 from setuptools import find_packages, setup
 
-dependencies = ['click','qrtools']
+dependencies = ['click']
 
 setup(
     name='hardcopybackup',

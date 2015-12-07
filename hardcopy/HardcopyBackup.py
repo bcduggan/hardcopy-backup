@@ -1,6 +1,6 @@
 import os
+import sets
 import atexit
-import qrtools
 import hashlib
 import logging
 import tempfile
@@ -10,39 +10,26 @@ logging.basicConfig(level=logging.INFO)
 
 class HardcopyBackup(object):
 
-    defaults = {
-        'barcode': 'QR',
-        'to': 'PDF',
-        'segment_size': 512,
-    }
+    def __init__(self, input, barcode, to, segment_size, backup_name, build_dir=''):
+        self.config = {
+            'input': input,
+            'barcode': barcode,
+            'to': to,
+            'segment_size': segment_size,
+            'backup_name': backup_name,
+            'build_dir': build_dir or tempfile.mkdtemp(prefix='hardcopy-'),
+        }
 
-    def secure_rm_rf(self, dir):
-        for (dirpath, dirnames, filenames) in os.walk(dir):
-            for filename in filenames:
-                os.remove(os.path.join(dirpath,filename))
-        os.rmdir(dir)
+        self.mk_build_dir()
 
-    def build_config(self, config={}):
-        # If user did not configure a build directory, securely remove
-        # the build directory at the at exit.
-        if not config.has_key('build_dir'):
-            # tempfile prepends relative path with '/tmp/'
-            build_dir = tempfile.mkdtemp(prefix='hardcopy-')
-            atexit.register(self.secure_rm_rf, build_dir)
-            self.defaults['build_dir'] = build_dir
+    def mk_build_dir(self):
+        os.makedirs(os.path.join(
+            self.config['build_dir'],
+            self.config['backup_name'],
+            'barcodes'), mode=0700)
         
-        self.config = {}
-        self.config.update(self.defaults)
-        self.config.update(config)
-        
-    def __init__(self, input, **kwargs):
-        self.input = input
-        self.build_config(kwargs)
-        logging.debug(self.config)
-        return
-
     def segments(self):
-        input = self.input
+        input = self.config['input']
         size = self.config['segment_size']
         
         while True:
@@ -51,14 +38,29 @@ class HardcopyBackup(object):
                 break
             yield segment
 
-    def generate_barcodes(self):
-        self.Barcoder = Barcoder(self.config['build_dir'],
-                                 barcode=self.config['barcode'])
-        for segment in self.segments():
+    def generate_barcodes(self, format=''):
+        filename_format = format or self.config['barcode'] + '-%02d.' + self.config['to'].lower()
+        
+        self.Barcoder = Barcoder(barcode=self.config['barcode'])
+
+        logging.error(self.config['backup_name'])
+        barcode_dir = os.path.join(
+            self.config['build_dir'],
+            self.config['backup_name'],
+            'barcodes')
+
+        for index,segment in enumerate(self.segments()):
             segment_hash = hashlib.sha256()
             segment_hash.update(segment)
+
+            self.Barcoder.encode(segment,
+                                 os.path.join(
+                                     barcode_dir,
+                                     filename_format % (index)
+                                     )
+                                 )
             
             yield {
-                'image': self.Barcoder.encode(segment),
+                'barcode_filename': filename_format % (index),
                 'hash': segment_hash,
             }
