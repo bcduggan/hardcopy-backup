@@ -2,6 +2,7 @@ import os
 import click
 import logging
 import tempfile
+from pkg_resources import resource_string
 from HardcopyBackup import HardcopyBackup
 
 logging.basicConfig(level=logging.INFO)
@@ -23,6 +24,12 @@ def cli():
     pass
 
 @cli.command()
+def debug():
+    tpl = resource_string(__name__, 'templates/hardcopy.md.j2')
+    print(tpl)
+    return
+
+@cli.command()
 @click.option('--barcode', '-b',
               type=click.Choice(['QR', 'DMTX', 'PDF417']),
               default='QR')
@@ -42,6 +49,8 @@ def cli():
 @click.argument('input', type=click.File('rb'), required=True)
 @click.pass_context
 def backup(ctx, barcode, to, segment_size, backup_name, build_dir, input):
+
+
     if backup_name in os.listdir(build_dir):
         click.confirm('Backup directory exists. Overwrite?', abort=True)
         secure_rm_rf(os.path.join(build_dir,backup_name))
@@ -66,4 +75,3 @@ def secure_rm_rf(dir):
 
 if __name__ == '__main__':
     cli()
-
