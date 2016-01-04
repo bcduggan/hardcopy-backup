@@ -1,1 +1,1 @@
-graft hardcopy/templates
+include hardcopy/templates *.j2
