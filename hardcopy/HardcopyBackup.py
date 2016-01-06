@@ -4,6 +4,7 @@ import atexit
 import hashlib
 import logging
 import tempfile
+from jinja2 import Environment, PackageLoader
 from Barcoder import Barcoder
 
 logging.basicConfig(level=logging.INFO)
@@ -63,3 +64,19 @@ class HardcopyBackup(object):
                 'barcode_filename': filename_format % (index),
                 'hash': segment_hash,
             }
+
+    def jinja2_render(self):
+        jenv = Environment(
+            loader=PackageLoader(__name__, 'templates'))
+
+        template = jenv.get_template('hardcopy.md.j2')
+
+        markdown = template.render({'segments': list(self.generate_barcodes())})
+
+        hardcopy_md = os.path.join(
+            self.config['src_dir'], 'hardcopy.md')
+
+        hardcopy_md_f = open(hardcopy_md, 'w')
+        hardcopy_md_f.write(markdown)
+        hardcopy_md_f.close()
+
