@@ -25,8 +25,9 @@ def cli():
 
 @cli.command()
 def debug():
-    tpl = resource_string(__name__, 'templates/hardcopy.md.j2')
-    print(tpl)
+    #cfg = resource_string(__name__, 'hardcopy.cfg')
+    #print(cfg)
+    print(os.path.curdir)
     return
 
 @cli.command()
@@ -37,34 +38,37 @@ def debug():
               type=click.Choice(['PDF','PS','DOCX','ODT','RTF']),
               default='PDF')
 @click.option('--segment-size', '-s', type=click.INT, default=512)
-@click.option('--backup-name', '-b', type=click.Path(exists=False),
-              default='hardcopy-backup')
 @click.option('--build_dir', '-d',
-                type=click.Path(exists=True,
+                type=click.Path(exists=False,
                                 file_okay=False,
-                                dir_okay=True,
-                                writable=True,
-                                readable=True),
-              default='.')
+                                dir_okay=True),
+              default=os.path.join(os.path.curdir, 'hardcopy.d')
+              )
 @click.argument('input', type=click.File('rb'), required=True)
 @click.pass_context
-def backup(ctx, barcode, to, segment_size, backup_name, build_dir, input):
-
-
-    if backup_name in os.listdir(build_dir):
-        click.confirm('Backup directory exists. Overwrite?', abort=True)
-        secure_rm_rf(os.path.join(build_dir,backup_name))
+def backup(ctx, barcode, to, segment_size, build_dir, input):
+ 
+    if os.path.exists(build_dir):
+        ## Incompatible with taking click input from stdin
+        #click.confirm('Backup directory exists. Overwrite?', abort=True)
+        #secure_rm_rf(os.path.join(os.path.curdir,build_dir))
+        logging.error(
+            'Directory %s already exists.' % (build_dir)
+        )
+        exit(1)
 
     hc = HardcopyBackup(input,
                         barcode,
                         to,
                         segment_size,
-                        backup_name,
                         build_dir)
-                       
+
+    hc.mk_build_dir()
+    
     for barcode in hc.generate_barcodes():
         logging.info(barcode['hash'].hexdigest())
         logging.info(barcode['barcode_filename'])
+
     return
 
 def secure_rm_rf(dir):
