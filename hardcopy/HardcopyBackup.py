@@ -4,6 +4,7 @@ import atexit
 import hashlib
 import logging
 import tempfile
+import subprocess
 from jinja2 import Environment, PackageLoader
 from Barcoder import Barcoder
 
@@ -20,6 +21,8 @@ class HardcopyBackup(object):
             'build_dir': build_dir,
             'barcode_dir': 'barcodes',
             'src_dir': 'src',
+            'data_dir': 'data',
+            'output': 'hardcopy.pdf',
             'template_vars': {}
         }
 
@@ -27,6 +30,7 @@ class HardcopyBackup(object):
         self.mk_build_dir()
         self.config['template_vars']['segments'] = self.barcodes()
         self.jinja2_render()
+        self.pandoc_render()
 
     def mk_build_dir(self):
         os.mkdir(
@@ -39,15 +43,45 @@ class HardcopyBackup(object):
         
         os.mkdir(
             self.config['src_dir'], 0700)
-        
-    def segments(self):
-        input = self.config['input']
-        size = self.config['segment_size']
-        
+
+        os.mkdir(
+            self.config['data_dir'], 0700)
+
+    def generate_segments(self):
+
+        data = open(
+            os.path.join(
+                self.config['data_dir'],
+                'data'
+            ),
+            'w',
+            0600
+        )
+
+        count = 0
         while True:
-            segment = input.read(size)
+            segment = self.config['input'].read(
+                self.config['segment_size']
+            )
+            
             if not segment:
+                data.close()
                 break
+            
+            data.write(segment)
+            
+            with open(
+                    os.path.join(
+                        self.config['data_dir'],
+                        'segment-%02d' % (count)
+                    ),
+                    'w',
+                    0600
+            ) as f:
+                f.write(segment)
+                
+            count = count + 1
+            
             yield segment
 
     def barcodes(self, format=''):
@@ -58,7 +92,7 @@ class HardcopyBackup(object):
         
         self.Barcoder = Barcoder(barcode=self.config['barcode'])
 
-        for index,segment in enumerate(self.segments()):
+        for index,segment in enumerate(self.generate_segments()):
             segment_hash = hashlib.sha256()
             segment_hash.update(segment)
 
@@ -66,7 +100,6 @@ class HardcopyBackup(object):
                 self.config['barcode_dir'],
                 filename_format % (index)
             )
-
 
             self.Barcoder.encode(segment, barcode_path)
             
@@ -83,9 +116,25 @@ class HardcopyBackup(object):
 
         markdown = template.render(self.config['template_vars'])
 
-        hardcopy_md = os.path.join(
-            self.config['src_dir'], 'hardcopy.md')
+        self.config['hardcopy_md'] = os.path.join(
+            self.config['src_dir'],
+            'hardcopy.md'
+        )
 
-        hardcopy_md_f = open(hardcopy_md, 'w')
+        hardcopy_md_f = open(self.config['hardcopy_md'], 'w')
         hardcopy_md_f.write(markdown)
         hardcopy_md_f.close()
+        
+    def pandoc_render(self):
+        try:
+            subprocess.check_output(['/usr/bin/pandoc',
+                                     '--from',
+                                     'markdown+yaml_metadata_block',
+                                     '--output',
+                                     self.config['output'],
+                                     self.config['hardcopy_md']
+                                 ],
+                                    stderr=subprocess.STDOUT
+                                )
+        except subprocess.CalledProcessError as e:
+            print(e.output)
