@@ -24,13 +24,6 @@ def cli():
     pass
 
 @cli.command()
-def debug():
-    #cfg = resource_string(__name__, 'hardcopy.cfg')
-    #print(cfg)
-    print(os.path.curdir)
-    return
-
-@cli.command()
 @click.option('--barcode', '-b',
               type=click.Choice(['QR', 'DMTX', 'PDF417']),
               default='QR')
@@ -44,9 +37,12 @@ def debug():
                                 dir_okay=True),
               default=os.path.join(os.path.curdir, 'hardcopy.d')
               )
+@click.option('--name','-n', default="My data")
+@click.option('--author','-a', default="Nobody")
+@click.option('--creation-date', '-c', default='2016-01-09')
 @click.argument('input', type=click.File('rb'), required=True)
 @click.pass_context
-def backup(ctx, barcode, to, segment_size, build_dir, input):
+def backup(ctx, barcode, to, segment_size, build_dir, name, author, creation_date, input):
  
     if os.path.exists(build_dir):
         ## Incompatible with taking click input from stdin
@@ -61,12 +57,12 @@ def backup(ctx, barcode, to, segment_size, build_dir, input):
                         barcode,
                         to,
                         segment_size,
-                        build_dir)
+                        build_dir,
+                        name,
+                        author,
+                        creation_date)
 
     hc.build()
-    #for barcode in hc.generate_barcodes():
-    #    logging.info(barcode['hash'].hexdigest())
-    #    logging.info(barcode['barcode_filename'])
 
     return
 

@@ -12,7 +12,8 @@ logging.basicConfig(level=logging.INFO)
 
 class HardcopyBackup(object):
 
-    def __init__(self, input, barcode, to, segment_size, build_dir):
+    def __init__(self, input, barcode, to, segment_size, build_dir, name, author, creation_date):
+
         self.config = {
             'input': input,
             'barcode': barcode,
@@ -23,7 +24,11 @@ class HardcopyBackup(object):
             'src_dir': 'src',
             'data_dir': 'data',
             'output': 'hardcopy.pdf',
-            'template_vars': {}
+            'template_vars': {
+                'name': name,
+                'author': author,
+                'creation_date': creation_date
+            }
         }
 
     def build(self):
@@ -49,6 +54,8 @@ class HardcopyBackup(object):
 
     def generate_segments(self):
 
+        data_hash = hashlib.sha256()
+        
         data = open(
             os.path.join(
                 self.config['data_dir'],
@@ -66,7 +73,10 @@ class HardcopyBackup(object):
             
             if not segment:
                 data.close()
+                self.config['template_vars']['hexdigest'] = data_hash.hexdigest()
                 break
+
+            data_hash.update(segment)
             
             data.write(segment)
             
@@ -105,7 +115,7 @@ class HardcopyBackup(object):
             
             yield {
                 'barcode_filename': barcode_path,
-                'hash': segment_hash,
+                'hexdigest': segment_hash.hexdigest(),
             }
 
     def jinja2_render(self):
