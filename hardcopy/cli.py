@@ -63,13 +63,10 @@ def backup(ctx, barcode, to, segment_size, build_dir, input):
                         segment_size,
                         build_dir)
 
-    hc.mk_build_dir()
-    
+    hc.build()
     #for barcode in hc.generate_barcodes():
     #    logging.info(barcode['hash'].hexdigest())
     #    logging.info(barcode['barcode_filename'])
-
-    hc.jinja2_render()
 
     return
 
