@@ -54,7 +54,7 @@ class HardcopyBackup(object):
 
     def generate_segments(self):
 
-        data_hash = hashlib.sha256()
+        data_hash = hashlib.sha1()
         
         data = open(
             os.path.join(
@@ -103,7 +103,7 @@ class HardcopyBackup(object):
         self.Barcoder = Barcoder(barcode=self.config['barcode'])
 
         for index,segment in enumerate(self.generate_segments()):
-            segment_hash = hashlib.sha256()
+            segment_hash = hashlib.sha1()
             segment_hash.update(segment)
 
             barcode_path = os.path.join(

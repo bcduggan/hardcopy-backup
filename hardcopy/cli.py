@@ -31,7 +31,7 @@ def cli():
 @click.option('--to', '-t',
               type=click.Choice(['PDF','PS','DOCX','ODT','RTF']),
               default='PDF')
-@click.option('--segment-size', '-s', type=click.INT, default=512)
+@click.option('--segment-size', '-s', type=click.INT, default=256)
 @click.option('--build_dir', '-d',
                 type=click.Path(exists=False,
                                 file_okay=False,

@@ -1,6 +1,6 @@
 ---
 title: 'Hardcopy backup of {{ name }}'
-subtitle: 'SHA256 checksum \texttt{ {{ hexdigest }} }'
+subtitle: 'SHA1 checksum: \texttt{ {{ hexdigest }} }'
 author: '{{ author }}'
 date: '{{ creation_date }}'
 documentclass: article
@@ -41,7 +41,14 @@ $ zbarimg --quiet page-*.pnm \
 
 \newpage
 
-# Raw data
+# Data
+
+Data checksum: \texttt{ {{ hexdigest }} }
+
+Segment checksums:
+{% for i in range(segments|count) %}
+Segment {{ i+1 }}: \texttt{ {{ segments[i].hexdigest }} }
+{% endfor %}
 
 \begin{verbatim}
 {{ data }}
@@ -54,7 +61,7 @@ $ zbarimg --quiet page-*.pnm \
 
 Segment {{ i+1 }} of {{ segments|count }}
 
-SHA256 checksum:
+SHA1 checksum:
 
     {{ segments[i].hexdigest }}
 

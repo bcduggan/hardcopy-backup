@@ -38,17 +38,18 @@ class HardcopyRestore(object):
 
     def restore(self):
         data = ''
-        data_hash = hashlib.sha256()
+        data_hash = hashlib.sha1()
         
         for barcode_data in self.get_barcode_data():
-            segment_hash = hashlib.sha256()
+            print('HELO')
+            segment_hash = hashlib.sha1()
 
             data_hash.update(barcode_data['data'])
             segment_hash.update(barcode_data['data'])
             data = data + barcode_data['data']
             
-            print('Segment sha256sum: ' + segment_hash.hexdigest() )
-            print('Full data sha256sum: ' + data_hash.hexdigest() )
+            print('Segment sha1sum: ' + segment_hash.hexdigest() )
+            print('Full data sha1sum: ' + data_hash.hexdigest() )
 
         self.zbarcam.terminate()
         print(data)
