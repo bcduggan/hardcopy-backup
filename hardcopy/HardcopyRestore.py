@@ -1,4 +1,6 @@
 import re
+import sys
+import click
 import pexpect
 import hashlib
 import logging
@@ -21,7 +23,7 @@ class HardcopyRestore(object):
 
         first_line = re.compile(
             '<barcodes xmlns=\'http://zbar\.sourceforge\.net/2008/barcode\'>' +
-            '<source device=\'\'>\r\n'
+            '<source device=\'(?P<device>.*)\'>\r\n'
         )
 
         if self.zbarcam.expect([first_line, pexpect.TIMEOUT]) == 1:
@@ -44,17 +46,21 @@ class HardcopyRestore(object):
     def restore(self):
         data = ''
         data_hash = hashlib.sha1()
-        
+
         for barcode_data in self.get_barcode_data():
             segment_hash = hashlib.sha1()
             
             data_hash.update(barcode_data['index']['symbol']['data'])
             segment_hash.update(barcode_data['index']['symbol']['data'])
-            data = data + barcode_data['index']['symbol']['data']
-            
-            print('Segment sha1sum: ' + segment_hash.hexdigest() )
-            print('Full data sha1sum: ' + data_hash.hexdigest() )
 
+            click.echo('\r', nl=False, err=True)
+            click.echo('Segment sha1sum:   ' + segment_hash.hexdigest(),
+                       err=True)
+            click.echo('Full data sha1sum: ' + data_hash.hexdigest(),
+                       nl=False, err=True)
+
+            sys.stdout.write(barcode_data['index']['symbol']['data'])
+
+        click.echo('', err=True)
         self.zbarcam.terminate()
-        print(data)
         return
