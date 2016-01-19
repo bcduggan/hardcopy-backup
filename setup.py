@@ -3,7 +3,7 @@ Hardcopy Backup embeds critical data in a reliably restorable, printable file.
 """
 from setuptools import find_packages, setup
 
-dependencies = ['click']
+dependencies = ['click', 'jinja2', 'pexpect', 'xmltodict']
 
 setup(
     name='hardcopybackup',
