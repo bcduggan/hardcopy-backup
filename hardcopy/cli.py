@@ -71,36 +71,10 @@ def backup(ctx, barcode, to, segment_size, build_dir, name, author, creation_dat
 @click.option('--barcode', '-b',
               type=click.Choice(['QR', 'DMTX', 'PDF417']),
               default='QR')
-@click.option('--output', '-o', default='restored-hardcopy-data')
-def restore(barcode, output):
-    hc = HardcopyRestore(barcode, output)
+@click.argument('out', type=click.File('wb'), required=True)
+def restore(barcode, out):
+    hc = HardcopyRestore(barcode, out)
     hc.restore()
-    
-    # Sample zbarcam output:
-    #<barcodes xmlns='http://zbar.sourceforge.net/2008/barcode'><source device=''>
-    #<index num='273'>
-    #<symbol type='QR-Code' quality='1'><data><![CDATA[http://streetsense.org/]]></data></symbol>
-    #</index>
-    #</source></barcodes>
-
-    #'<index num=\'(?P<index>\d+)\'>\r\n<symbol type=\'(?P<type>.+)\' quality=\'(?P<quality>\d+)\'><data><!\[CDATA\[(?P<data>.*)\]\]></data></symbol>')
-    
-#    xmldata = re.compile(
-#        '<index num=\'(?P<index>\d+)\'>(\r\n)*' +
-#        '<symbol type=\'(?P<type>.+)\' quality=\'(?P<quality>\d+)\'>(\r\n)*' +
-#        '<data>(\r\n)*' +
-#        '<!\[CDATA\[(?P<data>.*)\]\]>(\r\n)*' +
-#        '</data>(\r\n)*' +
-#        '</symbol>\r\n' +
-#        '</index>'
-#    )
-#
-#    zb = pexpect.spawn('/usr/bin/zbarcam --xml --prescale=32x240')
-#    match_index = zb.expect([xmldata, pexpect.EOF])
-#    if match_index == 0:
-#        #index, type, quality, data = zb.match.groups()
-#        print zb.match.groupdict()
-
     return
 
 def secure_rm_rf(dir):

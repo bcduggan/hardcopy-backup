@@ -10,7 +10,8 @@ logging.basicConfig(level=logging.INFO)
 
 class HardcopyRestore(object):
 
-    def __init__(self, barcode, output):
+    def __init__(self, barcode, out):
+        self.out = out
         self.get_zbarcam()
         return
 
@@ -42,7 +43,7 @@ class HardcopyRestore(object):
             yield xmltodict.parse(
                 self.zbarcam.before + '</index>'
             )
-            
+
     def restore(self):
         data = ''
         data_hash = hashlib.sha1()
@@ -59,7 +60,7 @@ class HardcopyRestore(object):
             click.echo('Full data sha1sum: ' + data_hash.hexdigest(),
                        nl=False, err=True)
 
-            sys.stdout.write(barcode_data['index']['symbol']['data'])
+            self.out.write(barcode_data['index']['symbol']['data'])
 
         click.echo('', err=True)
         self.zbarcam.terminate()
