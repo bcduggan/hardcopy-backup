@@ -9,6 +9,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 class Barcoder():
 
+    ## https://en.wikipedia.org/wiki/QR_code#Storage
+    ## QR max size assumes encoding in 8-bit mode
     const = {
         'QR': {
             'max_size': 2953
@@ -37,7 +39,10 @@ class Barcoder():
         self.check_config()
 
     def qrencode(self, data, filename, image_format, error_correction):
+        ## Encode in pure 'Alphanumeric' mode, 11 bits per 2 characters
+        ## Base64 encoding uses both upper and lower-case characters
         qrencode = subprocess.Popen(['qrencode',
+                                     '--ignorecase',
                                      '--level=%s' % (error_correction),
                                      '--type=%s' % (image_format),
                                      '--output=%s' % (filename)],

@@ -31,7 +31,10 @@ def cli():
 @click.option('--to', '-t',
               type=click.Choice(['PDF','PS','DOCX','ODT','RTF']),
               default='PDF')
-@click.option('--segment-size', '-s', type=click.INT, default=256)
+## https://en.wikipedia.org/wiki/QR_code#Storage
+## QR max size assumes encoding in 8-bit mode
+## Except the max for qrencode is 2938...
+@click.option('--segment-size', '-s', type=click.INT, default=1024)
 @click.option('--build_dir', '-d',
                 type=click.Path(exists=False,
                                 file_okay=False,

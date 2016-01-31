@@ -1,6 +1,7 @@
 import os
 import sets
 import atexit
+import base64
 import hashlib
 import logging
 import tempfile
@@ -70,7 +71,7 @@ class HardcopyBackup(object):
             segment = self.config['input'].read(
                 self.config['segment_size']
             )
-            
+
             if not segment:
                 data.close()
                 self.config['template_vars']['hexdigest'] = data_hash.hexdigest()
@@ -111,7 +112,12 @@ class HardcopyBackup(object):
                 filename_format % (index)
             )
 
-            self.Barcoder.encode(segment, barcode_path)
+            self.Barcoder.encode(
+                base64.b32encode(
+                    segment
+                ),
+                barcode_path
+            )
             
             yield {
                 'barcode_filename': barcode_path,

@@ -1,6 +1,7 @@
 import re
 import sys
 import click
+import base64
 import pexpect
 import hashlib
 import logging
@@ -54,9 +55,13 @@ class HardcopyRestore(object):
         for barcode_data in self.get_barcode_data():
             if barcode_data['index']['symbol']['@type'] == self.barcode:
                 segment_hash = hashlib.sha1()
+
+                segment_data = base64.b32decode(
+                    barcode_data['index']['symbol']['data']
+                )
                 
-                data_hash.update(barcode_data['index']['symbol']['data'])
-                segment_hash.update(barcode_data['index']['symbol']['data'])
+                data_hash.update(segment_data)
+                segment_hash.update(segment_data)
 
                 click.echo('\r', nl=False, err=True)
                 click.echo('Segment sha1sum:   ' + segment_hash.hexdigest(),
@@ -64,7 +69,7 @@ class HardcopyRestore(object):
                 click.echo('Full data sha1sum: ' + data_hash.hexdigest(),
                            nl=False, err=True)
 
-                self.out.write(barcode_data['index']['symbol']['data'])
+                self.out.write(segment_data)
 
         click.echo('', err=True)
         self.zbarcam.terminate()
