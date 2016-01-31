@@ -69,11 +69,12 @@ def backup(ctx, barcode, to, segment_size, build_dir, name, author, creation_dat
 
 @cli.command()
 @click.option('--barcode', '-b',
-              type=click.Choice(['QR', 'DMTX', 'PDF417']),
-              default='QR')
+              type=click.Choice(['QR-Code', 'DMTX', 'PDF417']),
+              default='QR-Code')
+@click.option('--device', '-d', default='')
 @click.argument('out', type=click.File('wb'), required=True)
-def restore(barcode, out):
-    hc = HardcopyRestore(barcode, out)
+def restore(barcode, device, out):
+    hc = HardcopyRestore(barcode, device, out)
     hc.restore()
     return
 

@@ -10,7 +10,9 @@ logging.basicConfig(level=logging.INFO)
 
 class HardcopyRestore(object):
 
-    def __init__(self, barcode, out):
+    def __init__(self, barcode, device, out):
+        self.barcode = barcode
+        self.device = device
         self.out = out
         self.get_zbarcam()
         return
@@ -19,7 +21,8 @@ class HardcopyRestore(object):
         self.zbarcam = pexpect.spawn('/usr/bin/zbarcam' +
                                      ' --quiet' +
                                      ' --xml' +
-                                     ' --prescale=320x240',
+                                     ' --prescale=320x240' +
+                                     ' ' + self.device,
                                      timeout=3600)
 
         first_line = re.compile(
@@ -49,18 +52,19 @@ class HardcopyRestore(object):
         data_hash = hashlib.sha1()
 
         for barcode_data in self.get_barcode_data():
-            segment_hash = hashlib.sha1()
-            
-            data_hash.update(barcode_data['index']['symbol']['data'])
-            segment_hash.update(barcode_data['index']['symbol']['data'])
+            if barcode_data['index']['symbol']['@type'] == self.barcode:
+                segment_hash = hashlib.sha1()
+                
+                data_hash.update(barcode_data['index']['symbol']['data'])
+                segment_hash.update(barcode_data['index']['symbol']['data'])
 
-            click.echo('\r', nl=False, err=True)
-            click.echo('Segment sha1sum:   ' + segment_hash.hexdigest(),
-                       err=True)
-            click.echo('Full data sha1sum: ' + data_hash.hexdigest(),
-                       nl=False, err=True)
+                click.echo('\r', nl=False, err=True)
+                click.echo('Segment sha1sum:   ' + segment_hash.hexdigest(),
+                           err=True)
+                click.echo('Full data sha1sum: ' + data_hash.hexdigest(),
+                           nl=False, err=True)
 
-            self.out.write(barcode_data['index']['symbol']['data'])
+                self.out.write(barcode_data['index']['symbol']['data'])
 
         click.echo('', err=True)
         self.zbarcam.terminate()
