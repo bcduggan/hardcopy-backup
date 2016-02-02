@@ -8,11 +8,8 @@ toc: True
 abstract: |
     Restoring this data, for the impatient:
     \begin{verbatim}
-    $ zbarcam \
-	| awk -v RS="\n?QR-Code:" -v ORS="" '{ print }' \
-	| head -c -1 \
-	> data.asc
-	\end{verbatim}
+    hardcopy restore [RESTORED_DATA_FILE]
+    \end{verbatim}
 
     Tested with scanner: $\square$
 
@@ -21,22 +18,40 @@ abstract: |
 
 # Restore
 
-Using a webcam:
+You can restore the backed up data from barcode using a webcam with the 'hardcopy' utility that generated this backup. Use:
 
 \begin{verbatim}
-$ zbarcam \
-| awk -v RS="\n?QR-Code:" -v ORS="" '{ print }' \
-| head -c -1 \
-> data.asc
+hardcopy restore [RESTORED_DATA_FILE]
 \end{verbatim}
 
-Using scanned barcodes:
+'hardcopy restore' will use the webcam by default and print sha1sums of each segment as you scan them to stderr. It will also print the sha1sum of the accumulated segment data.
+
+If you cannot obtain 'hardcopy', you can easily restore the data from barcode with 'zbarcam' and 'python.
+
+Using a webcam without 'hardcopy':
 
 \begin{verbatim}
-$ zbarimg --quiet page-*.pnm \
-| awk -v RS="\n?QR-Code:" -v ORS="" '{ print }' \
-| head -c -1 \
-> data.asc
+$ alias base32decode='python \
+> -m sys -m base64 \
+> -c"sys.stdout.write(base64.b32decode(sys.argv[1]))"'
+
+$ for segment in `zbarcam --raw`
+> do
+> ./base32decode.py $segment >> data
+> done
+\end{verbatim}
+
+Using scanned barcodes without 'hardcopy':
+
+\begin{verbatim}
+$ alias base32decode='python \
+> -m sys -m base64 \
+> -c"sys.stdout.write(base64.b32decode(sys.argv[1]))"'
+
+$ for segment in `zbarimg --quiet page-*.pnm`
+> do
+> base32decode $segment >> data
+> done
 \end{verbatim}
 
 \newpage

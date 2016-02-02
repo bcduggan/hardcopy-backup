@@ -13,7 +13,7 @@ class Barcoder():
     ## QR max size assumes encoding in 8-bit mode
     const = {
         'QR': {
-            'max_size': 2953
+            'max_size': 4296
         }
     }
 
