@@ -68,8 +68,10 @@ class HardcopyBackup(object):
 
         count = 0
         while True:
+            # Only read as much data as can be base32-encoded in the segment size.
+            # base32 encodes every 5 bytes as 8 characters in a 32-letter alphabet.
             segment = self.config['input'].read(
-                self.config['segment_size']
+                self.config['segment_size'] / 8 * 5
             )
 
             if not segment:
